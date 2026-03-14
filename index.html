@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Myth or Fact</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #eef6ff, #f8fbff);
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.10);
+      padding: 28px;
+    }
+
+    h1, h2 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #4b5563;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #f9fbff;
+      border: 1px solid #dbe7ff;
+      border-radius: 14px;
+      padding: 20px;
+      margin-top: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    input, select {
+      border: 1px solid #c9d5ea;
+      background: #fff;
+    }
+
+    button {
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .start-btn {
+      background: #2563eb;
+    }
+
+    .start-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .myth-btn {
+      background: #dc2626;
+    }
+
+    .myth-btn:hover {
+      background: #b91c1c;
+    }
+
+    .fact-btn {
+      background: #16a34a;
+    }
+
+    .fact-btn:hover {
+      background: #15803d;
+    }
+
+    .next-btn {
+      background: #64748b;
+    }
+
+    .next-btn:hover {
+      background: #475569;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+
+    .pill {
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      padding: 10px 14px;
+      border-radius: 999px;
+    }
+
+    .statement-box {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.35;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .result {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      line-height: 1.6;
+    }
+
+    .correct {
+      background: #ecfdf5;
+      border-color: #86efac;
+    }
+
+    .incorrect {
+      background: #fef2f2;
+      border-color: #fca5a5;
+    }
+
+    .small {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .summary-box {
+      margin-top: 15px;
+      padding: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Myth or Fact</h1>
+    <p class="subtitle">Career myths, real facts, and a little educational humiliation.</p>
+
+    <div id="startScreen">
+      <div class="card">
+        <div class="grid">
+          <div>
+            <label for="playerName">Player Name</label>
+            <input type="text" id="playerName" placeholder="Enter your name" />
+          </div>
+
+          <div>
+            <label for="roundSelect">Number of Rounds</label>
+            <select id="roundSelect">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+              <option value="25">25</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="start-btn" onclick="startGame()">Start Game</button>
+
+        <div class="summary-box">
+          <strong>Total statements loaded:</strong> <span id="statementCount"></span><br>
+          <strong>How to play:</strong> Read each statement and choose whether it is a <strong>Myth</strong> or a <strong>Fact</strong>.
+        </div>
+      </div>
+    </div>
+
+    <div id="gameScreen" class="hidden">
+      <div class="scoreboard">
+        <div class="pill" id="roundInfo">Round 1 of 10</div>
+        <div class="pill" id="scoreInfo">Score: 0</div>
+        <div class="pill" id="correctInfo">Correct: 0</div>
+      </div>
+
+      <div class="card">
+        <div class="statement-box" id="statementText">Statement goes here</div>
+
+        <div class="button-row">
+          <button class="myth-btn" onclick="submitAnswer('Myth')">Myth</button>
+          <button class="fact-btn" onclick="submitAnswer('Fact')">Fact</button>
+        </div>
+
+        <div id="resultBox" class="result hidden"></div>
+        <button id="nextButton" class="next-btn hidden" onclick="nextRound()">Next Round</button>
+      </div>
+    </div>
+
+    <div id="endScreen" class="hidden">
+      <div class="card">
+        <h2 id="finalMessage">Game Over</h2>
+        <p id="finalScore"></p>
+        <p id="finalBreakdown"></p>
+        <p id="playerSummary"></p>
+        <button class="start-btn" onclick="restartGame()">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const statements = [
+      { text: "Nurses spend most of their shift helping doctors", answer: "Myth" },
+      { text: "Doctors can graduate with over $200k in student debt", answer: "Fact" },
+      { text: "Paramedics sometimes work 24-hour shifts", answer: "Fact" },
+      { text: "Pharmacists must understand drug interactions", answer: "Fact" },
+      { text: "Physical therapists need a doctoral degree", answer: "Fact" },
+      { text: "Surgeons operate every day", answer: "Myth" },
+      { text: "Dentists run their own businesses often", answer: "Fact" },
+      { text: "EMT training can take less than one year", answer: "Fact" },
+      { text: "Radiologists rarely see patients directly", answer: "Fact" },
+      { text: "Veterinarians only treat cats and dogs", answer: "Myth" },
+      { text: "Electricians often earn while training", answer: "Fact" },
+      { text: "Welders always work outdoors", answer: "Myth" },
+      { text: "Plumbers only fix toilets", answer: "Myth" },
+      { text: "HVAC technicians work in extreme temperatures", answer: "Fact" },
+      { text: "Construction managers usually started in trades", answer: "Fact" },
+      { text: "Car mechanics use computers to diagnose problems", answer: "Fact" },
+      { text: "Elevator repair is one of the highest paid trades", answer: "Fact" },
+      { text: "Skilled trades require no math", answer: "Myth" },
+      { text: "Many trades require apprenticeships", answer: "Fact" },
+      { text: "Trade careers always require college degrees", answer: "Myth" },
+      { text: "Software developers often work remotely", answer: "Fact" },
+      { text: "Cybersecurity experts sometimes simulate hacking", answer: "Fact" },
+      { text: "Data analysts spend much time cleaning messy data", answer: "Fact" },
+      { text: "IT professionals fix mostly printer problems", answer: "Myth" },
+      { text: "AI engineers work with large datasets", answer: "Fact" },
+      { text: "Game testers play games for fun all day", answer: "Myth" },
+      { text: "Web developers must know multiple coding languages", answer: "Fact" },
+      { text: "Some tech jobs do not require a degree", answer: "Fact" },
+      { text: "Programmers rarely work with teams", answer: "Myth" },
+      { text: "Technology careers change quickly", answer: "Fact" },
+      { text: "Accountants only work during tax season", answer: "Myth" },
+      { text: "Entrepreneurs often work more hours than employees", answer: "Fact" },
+      { text: "Marketing professionals analyze data and trends", answer: "Fact" },
+      { text: "CEOs make every decision alone", answer: "Myth" },
+      { text: "Many businesses fail within five years", answer: "Fact" },
+      { text: "Sales jobs can include commission income", answer: "Fact" },
+      { text: "Business analysts use spreadsheets often", answer: "Fact" },
+      { text: "Starting a business always requires large amounts of money", answer: "Myth" },
+      { text: "Networking helps career growth", answer: "Fact" },
+      { text: "Financial advisors must understand investment risk", answer: "Fact" },
+      { text: "Lawyers spend more time researching than arguing", answer: "Fact" },
+      { text: "Police officers spend most of their day chasing criminals", answer: "Myth" },
+      { text: "Judges usually worked as lawyers first", answer: "Fact" },
+      { text: "Detectives often analyze reports and evidence", answer: "Fact" },
+      { text: "Lawyers must memorize every law", answer: "Myth" },
+      { text: "Court reporters type extremely fast", answer: "Fact" },
+      { text: "FBI agents must pass physical tests", answer: "Fact" },
+      { text: "Public defenders represent clients who can't afford lawyers", answer: "Fact" },
+      { text: "Law school usually takes three years", answer: "Fact" },
+      { text: "Government jobs never require background checks", answer: "Myth" },
+      { text: "Graphic designers revise projects many times", answer: "Fact" },
+      { text: "Photographers spend time editing photos", answer: "Fact" },
+      { text: "Musicians always make money quickly", answer: "Myth" },
+      { text: "Writers often face rejection before publishing", answer: "Fact" },
+      { text: "Animators work with specialized software", answer: "Fact" },
+      { text: "Interior designers consider safety codes", answer: "Fact" },
+      { text: "Fashion designers only sketch clothing", answer: "Myth" },
+      { text: "Film editors shape the story of movies", answer: "Fact" },
+      { text: "Artists can sell work online worldwide", answer: "Fact" },
+      { text: "Creativity is useful in many careers", answer: "Fact" },
+      { text: "Air traffic controllers manage multiple planes at once", answer: "Fact" },
+      { text: "Park rangers spend all day hiking", answer: "Myth" },
+      { text: "Zookeepers clean animal areas often", answer: "Fact" },
+      { text: "Astronauts must train for years", answer: "Fact" },
+      { text: "Meteorologists analyze weather data", answer: "Fact" },
+      { text: "Funeral directors study mortuary science", answer: "Fact" },
+      { text: "Professional athletes usually have short careers", answer: "Fact" },
+      { text: "Firefighters respond to medical emergencies", answer: "Fact" },
+      { text: "Pilots must log flight hours regularly", answer: "Fact" },
+      { text: "Archaeologists dig up dinosaurs", answer: "Myth" },
+      { text: "Chefs often work nights and weekends", answer: "Fact" },
+      { text: "Teachers only work during school hours", answer: "Myth" },
+      { text: "Social workers help families in crisis", answer: "Fact" },
+      { text: "Truck drivers may spend days away from home", answer: "Fact" },
+      { text: "Real estate agents rely on commissions", answer: "Fact" },
+      { text: "Journalists must verify information before publishing", answer: "Fact" },
+      { text: "Event planners manage stressful deadlines", answer: "Fact" },
+      { text: "Architects use math and design skills", answer: "Fact" },
+      { text: "Librarians manage digital databases", answer: "Fact" },
+      { text: "Personal trainers study anatomy", answer: "Fact" },
+      { text: "Chocolatiers taste test products", answer: "Fact" },
+      { text: "Toy designers test toys with children", answer: "Fact" },
+      { text: "Video editors can work remotely", answer: "Fact" },
+      { text: "Professional gamers train daily", answer: "Fact" },
+      { text: "Sommelier careers require wine knowledge", answer: "Fact" },
+      { text: "Cruise ship workers travel globally", answer: "Fact" },
+      { text: "Theme park engineers design rides", answer: "Fact" },
+      { text: "Drone pilots inspect buildings and farms", answer: "Fact" },
+      { text: "Voice actors record lines many times", answer: "Fact" },
+      { text: "Professional speakers rehearse presentations heavily", answer: "Fact" },
+      { text: "You must go to college to succeed", answer: "Myth" },
+      { text: "Passion alone guarantees career success", answer: "Myth" },
+      { text: "Many people change careers several times", answer: "Fact" },
+      { text: "Some jobs that pay well require certifications instead of degrees", answer: "Fact" },
+      { text: "Networking can open career opportunities", answer: "Fact" },
+      { text: "Internships can lead to full-time jobs", answer: "Fact" },
+      { text: "Work experience matters to employers", answer: "Fact" },
+      { text: "Skills can be learned at any age", answer: "Fact" },
+      { text: "Soft skills matter in every career", answer: "Fact" },
+      { text: "Most people keep the same job forever", answer: "Myth" }
+    ];
+
+    let playerName = "";
+    let score = 0;
+    let correctAnswers = 0;
+    let round = 0;
+    let totalRounds = 10;
+    let gameStatements = [];
+    let currentStatement = null;
+    let answeredThisRound = false;
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function startGame() {
+      playerName = document.getElementById("playerName").value.trim() || "Player";
+      totalRounds = Number(document.getElementById("roundSelect").value);
+
+      if (totalRounds > statements.length) {
+        totalRounds = statements.length;
+      }
+
+      score = 0;
+      correctAnswers = 0;
+      round = 0;
+      answeredThisRound = false;
+      gameStatements = shuffle(statements).slice(0, totalRounds);
+
+      document.getElementById("startScreen").classList.add("hidden");
+      document.getElementById("endScreen").classList.add("hidden");
+      document.getElementById("gameScreen").classList.remove("hidden");
+
+      loadRound();
+    }
+
+    function loadRound() {
+      currentStatement = gameStatements[round];
+      answeredThisRound = false;
+
+      document.getElementById("roundInfo").textContent = `Round ${round + 1} of ${totalRounds}`;
+      document.getElementById("scoreInfo").textContent = `Score: ${score}`;
+      document.getElementById("correctInfo").textContent = `Correct: ${correctAnswers}`;
+      document.getElementById("statementText").textContent = currentStatement.text;
+
+      const resultBox = document.getElementById("resultBox");
+      resultBox.className = "result hidden";
+      resultBox.innerHTML = "";
+      document.getElementById("nextButton").classList.add("hidden");
+    }
+
+    function submitAnswer(choice) {
+      if (answeredThisRound) return;
+
+      answeredThisRound = true;
+
+      const isCorrect = choice === currentStatement.answer;
+      const resultBox = document.getElementById("resultBox");
+
+      if (isCorrect) {
+        score += 10;
+        correctAnswers += 1;
+        resultBox.className = "result correct";
+        resultBox.innerHTML = `
+          <strong>Correct!</strong><br><br>
+          You chose: <strong>${choice}</strong><br>
+          Correct answer: <strong>${currentStatement.answer}</strong><br>
+          Points earned: <strong>10</strong>
+        `;
+      } else {
+        resultBox.className = "result incorrect";
+        resultBox.innerHTML = `
+          <strong>Not quite.</strong><br><br>
+          You chose: <strong>${choice}</strong><br>
+          Correct answer: <strong>${currentStatement.answer}</strong><br>
+          Points earned: <strong>0</strong>
+        `;
+      }
+
+      document.getElementById("scoreInfo").textContent = `Score: ${score}`;
+      document.getElementById("correctInfo").textContent = `Correct: ${correctAnswers}`;
+      document.getElementById("nextButton").classList.remove("hidden");
+    }
+
+    function nextRound() {
+      round++;
+      if (round >= totalRounds) {
+        endGame();
+      } else {
+        loadRound();
+      }
+    }
+
+    function endGame() {
+      document.getElementById("gameScreen").classList.add("hidden");
+      document.getElementById("endScreen").classList.remove("hidden");
+
+      const maxScore = totalRounds * 10;
+      const percent = Math.round((score / maxScore) * 100);
+
+      document.getElementById("finalMessage").textContent = `Nice work, ${playerName}!`;
+      document.getElementById("finalScore").textContent = `Your final score is ${score} out of ${maxScore}.`;
+      document.getElementById("finalBreakdown").textContent = `You got ${correctAnswers} out of ${totalRounds} correct. Accuracy: ${percent}%.`;
+
+      let summary = "";
+      if (percent >= 90) {
+        summary = "You crushed it. Either you know careers really well or myths fear you personally.";
+      } else if (percent >= 70) {
+        summary = "Strong job. You know more than the average person confidently guessing nonsense.";
+      } else if (percent >= 50) {
+        summary = "Not bad. A few myths got past security, but you still learned something.";
+      } else {
+        summary = "Well... the myths won some rounds, but now your students know better. That counts.";
+      }
+
+      document.getElementById("playerSummary").textContent = summary;
+    }
+
+    function restartGame() {
+      document.getElementById("playerName").value = "";
+      document.getElementById("startScreen").classList.remove("hidden");
+      document.getElementById("gameScreen").classList.add("hidden");
+      document.getElementById("endScreen").classList.add("hidden");
+    }
+
+    document.getElementById("statementCount").textContent = statements.length;
+  </script>
+</body>
+</html>
